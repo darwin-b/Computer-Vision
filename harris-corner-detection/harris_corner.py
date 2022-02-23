@@ -117,9 +117,9 @@ def harris_corner(im):
 
     # step 3: compute the sums of products of derivatives at each pixel using Gaussian filter from OpenCV
     
-    xx_s = cv2.GaussianBlur(xx_grad,(5,5),0)
-    xy_s = cv2.GaussianBlur(xy_grad,(5,5),0)
-    yy_s = cv2.GaussianBlur(yy_grad,(5,5),0)
+    xx_s = cv2.GaussianBlur(xx_grad,(5,5),3)
+    xy_s = cv2.GaussianBlur(xy_grad,(5,5),3)
+    yy_s = cv2.GaussianBlur(yy_grad,(5,5),3)
 
     print(len(xx_s),len(xx_s[0]))
     print(len(xy_s),len(xy_s[0]))
