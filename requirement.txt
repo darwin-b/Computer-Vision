@@ -2,3 +2,5 @@ matplotlib
 opencv-python
 scipy
 numpy
+matplotlib
+pybullet
