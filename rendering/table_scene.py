@@ -1,8 +1,4 @@
-"""
-CS 6384 Homework 2 Programming
-Implement the look_at_box_front() function in this python script
-to capture an image of the box from its front side
-"""
+
 
 import os
 import time
@@ -22,7 +18,7 @@ class TableYCBEnv():
         self._window_height = 480
         self.object_uid = None
         self._timeStep = 1. / 1000.
-        self.root_dir = os.path.dirname(os.path.abspath(__file__))
+        self.root_dir = os.path.dirname(os.path.abspath("./"))
 
         self.connect()
         self.reset()
@@ -159,7 +155,19 @@ class TableYCBEnv():
     # Set the distance of the camera to 2.5
     #TODO: implement this function                                                   
     def look_at_box_front(self):
-    
+        
+        distance = 2.5
+        pos, orientation = p.getBasePositionAndOrientation(self.object_uid)
+        pitch,yaw,roll = p.getEulerFromQuaternion(orientation)
+        # pitch +=90
+        yaw += 90
+        # roll += 90
+        print("=========")
+        # print(ob1)
+        print(pos,orientation)
+        print(yaw, pitch, roll)
+        print("=========")
+        view_matrix = p.computeViewMatrixFromYawPitchRoll(pos, distance, yaw, pitch, roll, 2)
 
         
         return view_matrix
