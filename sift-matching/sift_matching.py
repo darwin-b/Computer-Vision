@@ -16,9 +16,26 @@ import matplotlib.pyplot as plt
 # idea: for each descriptor in des1, find its matching by computing L2 distance with all the descriptors in des2
 def sift_matching(des1, des2):
 
+    m,_ = des1.shape    
+    n,_ = des2.shape
 
-
+    index = np.zeros(shape=m,dtype=int)
+    # visited = set()
+    for i in range(m):
+        min_distance = float("inf")
+        min_index = None
+        for j in range(n):
+            # if j not in visited:
+            d = sum(abs(des1[i] - des2[j]))
+            if min_distance>d*d:
+                min_distance=d*d
+                min_index = j
+        index[i] = min_index
+        # visited.add(min_index)
     return index
+
+# def dist(d1,d2):
+
 
 
 # main function
@@ -68,6 +85,9 @@ if __name__ == '__main__':
     for i in range(0, len(keypoints_1), 10):
         pt1 = keypoints_1[i].pt
         matched = index[i]
+        # if matched == 0:
+        #     continue
+
         pt2 = keypoints_2[matched].pt
         x = [pt1[0], pt2[0] + width]
         y = [pt1[1], pt2[1]]
