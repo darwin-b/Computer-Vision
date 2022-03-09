@@ -3,6 +3,7 @@ CS 6384 Homework 3 Programming
 Epipolar Geometry
 """
 
+from turtle import shape
 import cv2
 import scipy.io
 import numpy as np
@@ -49,24 +50,55 @@ def read_data(file_index):
 def compute_fundamental_matrix(xy1, xy2):
     pass
     # step 1: construct the A matrix
+    n = len(xy1)
+    a = []
+    
+    x1 = xy1.T[0]
+    x2 = xy2.T[0]
 
+    y1 = xy1.T[1]
+    y2 = xy2.T[1]
+
+    c1 = np.multiply(x2,x1)
+    c2 = np.multiply(x2,y1)
+    c3 = x2
+    c4 = np.multiply(y2,x1)
+    c5 = np.multiply(y2,y1)
+    c6 = y2
+    c7 = x1
+    c8=y1
+    c9=np.ones(n)
+    
+    a = np.vstack([c1,c2,c3,c4,c5,c6,c7,c8,c9]).T
+
+    # print(a)
+        
+    
     
     # step 2: SVD of A
     # use numpy function for SVD
-
+    u,d,vt = np.linalg.svd(a)
     
     # step 3: get the last column of V
+    v = vt.T
+    F = v[:,-1]
     
-    
-    # step 4: SVD of F
+    F=np.reshape(F,(3,3))
 
+    # return F
+    # step 4: SVD of F
+    uf,df,vft = np.linalg.svd(F)
     
     # step 5: mask the last element of singular value of F
-    
-    
-    # step 6: reconstruct F
+    mask = [1,1,0]
+    df[-1]=0
 
-    return F  
+       
+    # step 6: reconstruct F
+    f = uf@np.diag(df)@vft 
+    # f = np.reshape(f,9)
+
+    return f
 
 
 # main function
@@ -122,16 +154,60 @@ if __name__ == '__main__':
     xy1 = index
     # xy1 is a set of pixels on image 1
     # we will find the correspondences of these pixels
+
+    
+    
+    #TODO
+    # use your code from homework 1, problem 3 to find the correspondences of xy1
+    # let the corresponding pixels on image 2 be xy2 with shape (n, 2)
+    pcloud = backproject(depth1,intrinsic_matrix)
+
+    pts =[]
+    for x,y in index:
+        # points3d[(x,y)]= pcloud[x,y,:]
+        pts.append(pcloud[y,x,:])
+    # print("====",points3d)
+    # exit 
+    # Step 2: transform the points to the camera of image 2 using the camera poses in the meta data
+    RT1 = meta1['camera_pose']
+    RT2 = meta2['camera_pose']
+    rt1_inv = np.linalg.inv(RT1)
+    rt2_inv = np.linalg.inv(RT2)
+    # print(RT1.shape, RT2.shape)
+    #     org = matmul(inv(rt1),p1) 
+    #     org2=    matmul(org,rt2)        
+    #     matmul(k,org2)
+
+    
+    tr1 = []
+    for point in pts:
+        tmp = np.append(point,1)
+        tr = np.matmul(rt1_inv , tmp  )
+        tr2 = np.matmul(RT2,tr)
+        p = np.column_stack((np.eye(3),np.zeros(3)))
+        p2d = np.matmul(np.matmul(intrinsic_matrix,p), tr2)
+        x,y = p2d[0]//p2d[2],p2d[1]//p2d[2] 
+        # print("******************")
+        # print("shape p2d:",p2d)
+        # print("x,y",x,y)
+        # print("******************")
+        tr1.append(np.array([int(x),int(y)]))
+
+    # org = np.matmul()
+    # print("******************")
+    # print("******************")
+    # print(tr1)
+    # print("******************")
+    # print("******************")
+    # Step 3: project the transformed 3D points to the second image
+    # support the output of this step is x2d with shape (2, n) which will be used in the following visuali zation
+    x2d=np.array(tr1).T
+    xy2 = x2d.T
     
     # transform the points to another camera
     RT1 = meta1['camera_pose']
     RT2 = meta2['camera_pose']
     print(RT1.shape, RT2.shape)
-    
-    #TODO
-    # use your code from homework 1, problem 3 to find the correspondences of xy1
-    # let the corresponding pixels on image 2 be xy2 with shape (n, 2)
-    xy2 = backproject(depth1,intrinsic_matrix)
     
     #TODO
     # implement this function: compute fundamental matrix
