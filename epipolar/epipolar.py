@@ -48,7 +48,7 @@ def read_data(file_index):
 # Follow lecture 11, the 8-point algorithm
 # xy1 and xy2 are with shape (n, 2)
 def compute_fundamental_matrix(xy1, xy2):
-    pass
+    # pass
     # step 1: construct the A matrix
     n = len(xy1)
     a = []
