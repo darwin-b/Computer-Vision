@@ -50,15 +50,55 @@ def read_data(file_index):
 # RT1, RT2 are camera poses with shape (4, 4)
 # K is the camera intrinsic matrix with shape (3, 3)
 # xy1 and xy2 are with shape (n, 2)
+def diff(x,A):
+    num=np.linalg.norm(A@x)
+    den=np.linalg.norm(x)
+    return num/den
+
 def triangulation(RT1, RT2, K, xy1, xy2):
 
     print(xy1.shape, xy2.shape)
     n = xy1.shape[0]
     points = np.zeros((n, 3), dtype=np.float32)
     
+
+    p1 = K@RT1[:-1,:]
+    p2 = K@RT2[:-1,:]
+
+
+    # r1 = 
+
+    # p1Inv = np.linalg.inv(p1)
+    # p2Inv = np.linalg.inv(p1)
+
+    z =[]
     # do the triangulation for each correspondence
     for i in range(n):
+        # pass
+        y1 = xy1[i]
+        y2 = xy2[i]
+
+        r1 = (xy1[i][1]*(p1[2].T)) - (p1[1].T)
+        r2 = p1[0].T - (xy1[i][0]*p1[2])
+        r3 = (xy2[i][1]*(p2[2].T)) - (p2[1].T)
+        r4 = p2[0].T - (xy2[i][0]*p2[2])
+
+        A = np.array([r1,r2,r3,r4])
+        r = np.ones(4)
+        fit = least_squares(diff,r,args=([A]))
     
+        point = fit.x
+        point = point/point[3]
+
+        points[i]=point[:-1]
+        # points[i]=fit.x[:-1]
+    
+    return points
+
+
+
+
+
         # HINT: use the least_squares function from scipy.optimize to solve the optimization problem
         # https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.least_squares.html
         
@@ -154,6 +194,34 @@ if __name__ == '__main__':
     #TODO
     # use your code from homework 1, problem 3 to find the correspondences of xy1
     # let the corresponding pixels on image 2 be xy2 with shape (n, 2)
+    pcloud = backproject(depth1,intrinsic_matrix)
+
+    pts =[]
+    for x,y in index:
+        # points3d[(x,y)]= pcloud[x,y,:]
+        pts.append(pcloud[y,x,:])
+
+    # Step 2: transform the points to the camera of image 2 using the camera poses in the meta data
+    RT1 = meta1['camera_pose']
+    RT2 = meta2['camera_pose']
+    rt1_inv = np.linalg.inv(RT1)
+    rt2_inv = np.linalg.inv(RT2)
+
+    
+    tr1 = []
+    for point in pts:
+        tmp = np.append(point,1)
+        tr = np.matmul(rt1_inv , tmp  )
+        tr2 = np.matmul(RT2,tr)
+        p = np.column_stack((np.eye(3),np.zeros(3)))
+        p2d = np.matmul(np.matmul(intrinsic_matrix,p), tr2)
+        x,y = p2d[0]//p2d[2],p2d[1]//p2d[2] 
+        tr1.append(np.array([int(x),int(y)]))
+
+
+    x2d=np.array(tr1).T
+    xy2 = x2d.T
+
     
     #TODO: implement this function for triangulation
     points = triangulation(RT1, RT2, intrinsic_matrix, xy1, xy2)
