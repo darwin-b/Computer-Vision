@@ -57,6 +57,33 @@ def space_carving(mask1, mask2, RT1, RT2, K):
     step = (top - bottom) / N
     
     # implement the space carving algorithm to fill the voxels
+
+    p1 = K@RT1[:-1,:]
+    p2 = K@RT2[:-1,:]
+    count=0
+    kt=0
+    for z in np.arange(bottom[2],top[2],step[2]):
+        j=0
+        for y in np.arange(bottom[1],top[1],step[1]):
+            i=0
+            for x in np.arange(bottom[0],top[0],step[0]):
+                point = np.array([x,y,z,1])
+                x2dhomo1 = p1@point
+                y1,x1 = (x2dhomo1//x2dhomo1[2])[:-1]
+                x2dhomo2 = p2@point
+                y2,x2 = (x2dhomo2//x2dhomo2[2])[:-1]
+
+                if 0<=x2<480 and 0<=x1<480 and 0<=y1<640 and 0<=y2<640:
+                    if mask1[int(x1),int(y1)]>0 and mask2[int(x2),int(y2)]>0:
+                        count+=1
+                        voxels[i][j][kt]=1
+                i+=1
+            j+=1
+        kt+=1
+
+    print(count)
+
+
     
     return voxels
     
