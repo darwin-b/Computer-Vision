@@ -1,3 +1,4 @@
+from cv2 import divide
 import numpy as np
 
 
@@ -21,6 +22,13 @@ def fc_forward(x, w, b):
     ###########################################################################
     # TODO: Implement the forward pass. Store the result in out.              #
     ###########################################################################
+    # N = x.shape[0]
+    # x_row = x.reshape(N, -1)
+    # out = x_row.dot(w) + b
+    
+    n,din = x.shape
+    out = (x@w) + np.repeat(b[None],n,axis=0)
+
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
@@ -49,9 +57,27 @@ def fc_backward(grad_out, cache):
     ###########################################################################
     # TODO: Implement the backward pass for the fully-connected layer         #
     ###########################################################################
+
+    N = x.shape[0]
+    x_row = x.reshape(N, -1)
+    grad_x = grad_out.dot(w.T)
+    grad_x = grad_x.reshape(x.shape)
+    grad_w = x_row.T.dot(grad_out)
+    grad_b = np.sum(grad_out, axis=0)
+
+#   Running slow probably because of @ operator
+    # n,dout = grad_out.shape
+    # grad_x = grad_out@w.T
+    # grad_w = x.T@grad_out
+    # grad_b = (np.ones(n).T)@grad_out
+    # grad_b = grad_b.T
+    # grad_b = np.sum(grad_out,axis=0)
+    # print("Grad_b shape in Fc backward [expected (dout,)]: ", grad_b.shape)
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
+
+
     return grad_x, grad_w, grad_b
 
 
@@ -70,6 +96,9 @@ def relu_forward(x):
     ###########################################################################
     # TODO: Implement the ReLU forward pass.                                  #
     ###########################################################################
+
+    out = np.maximum(x,0.0)
+    
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
@@ -92,6 +121,12 @@ def relu_backward(grad_out, cache):
     ###########################################################################
     # TODO: Implement the ReLU backward pass.                                 #
     ###########################################################################
+
+    # grad_x = np.minimum(1.0, np.ceil(np.maximum(x,0.0)))*grad_out
+
+    grad_x = grad_out
+    grad_x[x<=0] = 0
+
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
@@ -135,10 +170,54 @@ def softmax_loss(x, y):
     - grad_x: Numpy array of shape (N, C) giving the gradient of the loss with
       with respect to x
     """
+
     loss, grad_x = None, None
     ###########################################################################
     # TODO: Implement softmax loss                                            #
     ###########################################################################
+
+    # Slow execution because of looping by enumeration .... 
+
+    # # print("============")
+    # # print("shape y: ",y.shape,y )
+    # # print("shape x: ",x.shape )
+    # # print("============")
+    # # divide = np.sum(np.exp(x))
+    # batch = x
+    # nBatches,nClasses = x.shape
+    # loss = 0
+    # grad_x = np.zeros(shape=(nBatches,nClasses),dtype=float)
+    # p = np.zeros(nClasses,dtype=float)
+
+    # for i,x in enumerate(batch):
+    #   # print("============")
+    #   # print("shape x: ",i,x.shape,x )
+    #   # print("============")
+    #   m = np.max(x)
+    #   p = np.exp(x-m)/np.sum(np.exp(x-m))
+    #   loss += -np.sum(np.log(p[y[i]])) 
+    #   # print("los :",loss)
+    #   # print("============")
+    #   # print("shape p: ",p.shape,i )
+    #   # print("============")
+    #   delta = np.zeros(nClasses,dtype=float)
+    #   delta[y[i]]=1
+    #   grad_x[i] = p - delta
+    # loss = loss/nBatches
+    # grad_x = grad_x/nBatches
+    # # print(loss)
+    # # print("Grad X: ",grad_x)
+
+
+    # clean code and faster
+
+    p = np.exp(x - np.max(x, axis=1, keepdims=True)) 
+    p /= np.sum(p, axis=1, keepdims=True)
+    N = x.shape[0]
+    loss = -np.sum(np.log(p[np.arange(N), y])) / N
+    grad_x = p.copy()
+    grad_x[np.arange(N), y] -= 1
+    grad_x /= N
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
@@ -163,6 +242,12 @@ def l2_regularization(w, reg):
     ###########################################################################
     # TODO: Implement L2 regularization.                                      #
     ###########################################################################
+
+    loss = (reg/2)*np.sum((w*w))
+    grad_w = reg*w
+    # print("=================")
+    # print(loss)
+    # print(grad_w)
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################

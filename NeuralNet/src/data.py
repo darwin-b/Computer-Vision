@@ -62,7 +62,8 @@ class DataSampler:
         return self.X.shape[0] // self.batch_size
 
 
-_CIFAR_DIR = 'cifar-10-batches-py'
+# _CIFAR_DIR = os.path.join(os.getcwd(),"NeuralNet","src","cifar-10-batches-py")
+_CIFAR_DIR = 'cifar-10-batches-py'  
 
 
 def load_cifar10(data_dir=_CIFAR_DIR, num_train=10000, num_val=5000,
@@ -93,6 +94,8 @@ def load_cifar10(data_dir=_CIFAR_DIR, num_train=10000, num_val=5000,
     - y_test: int64 array of shape (num_test,) in the range [0, 10)
     """
     if not os.path.isdir(data_dir):
+        print("=======")
+        print(os.getcwd())
         print(f'Directory {data_dir} not found.')
         print('Did you run download_cifar.sh?')
         raise ValueError

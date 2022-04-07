@@ -43,6 +43,34 @@ def main(args):
     # TODO: Set hyperparameters for training your model. You can change any   #
     # of the hyperparameters above.                                           #
     ###########################################################################
+    num_train = 40000
+
+    # Model architecture hyperparameters.
+    hidden_dim = 35
+
+    # Optimization hyperparameters.
+    # increasing batch size reduced train time and increasing #epochs helped with accuracy
+    # so far these are the parameters which helped my initial training time to converge faster with increased epochs
+
+    batch_size = 200
+    num_epochs = 30
+    learning_rate = 0.02
+    reg = .008
+
+    #  hidden_dim = [15,35,50]
+    # reg = [0.01,0.05,0.1]
+    # learning_rate = [0.01,0.02,0.05,0.1]
+    # best so far 
+    # acc = 42.24
+    # r=0.005
+    # lr = 0.02
+    # acc = 
+    # r = 0.008
+    # batch = 200
+    # lr =0.02
+    # 
+
+
     ###########################################################################
     #                           END OF YOUR CODE                              #
     ###########################################################################
@@ -109,9 +137,28 @@ def training_step(model, X_batch, y_batch, reg):
       of the loss with respect to model.parameters()[k].
     """
     loss, grads = None, None
+    # loss=0
     ###########################################################################
     # TODO: Compute the loss and gradient for one training iteration.         #
     ###########################################################################
+
+    score, cache = model.forward(X_batch)    
+    lc_loss,lc_grads = softmax_loss(score,y_batch) 
+    g = model.backward(lc_grads,cache)
+    l1,gl1 = l2_regularization(model.w1,reg)
+    l2,gl2 = l2_regularization(model.w2,reg)
+    
+    
+    if grads is None:
+        grads = g
+    if loss is None:
+        loss = lc_loss+l1+l2
+    
+    loss += lc_loss+l1+l2
+    grads["w1"] += gl1
+    grads["w2"] += gl2
+
+
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
