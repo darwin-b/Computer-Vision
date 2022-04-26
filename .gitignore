@@ -5,7 +5,7 @@ __pycache__/
 
 # System Files
 *.DS_Store
-
+/yolo/data/*
 
 # C extensions
 *.so
